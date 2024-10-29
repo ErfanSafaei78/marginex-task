@@ -1,29 +1,23 @@
 import { Container, Paper } from "@mui/material";
 import { AppBarComponent } from "../components/home/AppBar";
 import { PieChart, PieChartProps } from "../components/global/PieChart";
-import { FiltersSection } from "../components/home/FilterSection";
 import { TaskTable } from "../components/home/TaskTable";
 import { TaskFormModal } from "../components/home/modals/TaskFormModal";
 import { StatusModal } from "../components/home/modals/StatusModal";
 import { DeleteModal } from "../components/home/modals/DeleteModal";
-import { useEffect, useMemo, useState } from "react";
-import { Priority, Status, Task } from "../types";
+import { useEffect, useState } from "react";
+import { Status, Task } from "../types";
 import { generateHash } from "../utils";
 import { SnackbarAlert } from "../components/global/SnackBar";
 
 export const Home: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
   const [openModal, setOpenModal] = useState(false);
   const [openStatusDialog, setOpenStatusDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Task | null;
-    direction: "asc" | "desc";
-  }>({ key: null, direction: "asc" });
-  const [filterPriority, setFilterPriority] = useState<Priority | "">("");
-  const [filterStatus, setFilterStatus] = useState<Status | "">("");
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarConfig, setSnackbarConfig] = useState<{
     message: string;
@@ -120,37 +114,6 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleSort = (key: keyof Task) => {
-    setSortConfig({
-      key,
-      direction:
-        sortConfig.key === key && sortConfig.direction === "asc"
-          ? "desc"
-          : "asc",
-    });
-  };
-
-  const sortedTasks = useMemo(() => {
-    const filtered = tasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (!filterPriority || task.priority === filterPriority) &&
-        (!filterStatus || task.status === filterStatus)
-    );
-
-    if (!sortConfig.key) return filtered;
-
-    return [...filtered].sort((a, b) => {
-      if (a[sortConfig.key!] < b[sortConfig.key!]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (a[sortConfig.key!] > b[sortConfig.key!]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  }, [tasks, searchTerm, filterPriority, filterStatus, sortConfig]);
-
   const chartProps: PieChartProps = {
     data: [
       ["TODO", tasks.filter((t) => t.status === "TODO").length],
@@ -176,16 +139,8 @@ export const Home: React.FC = () => {
         <Paper sx={{ p: 2, mb: 4 }}>
           <PieChart {...chartProps} />
         </Paper>
-        <FiltersSection
-          searchTerm={searchTerm}
-          filterPriority={filterPriority}
-          filterStatus={filterStatus}
-          onSearchChange={setSearchTerm}
-          onPriorityChange={setFilterPriority}
-          onStatusChange={setFilterStatus}
-        />
         <TaskTable
-          tasks={sortedTasks}
+          tasks={tasks}
           onEditTask={(task) => {
             setSelectedTask(task);
             setOpenModal(true);
@@ -198,8 +153,6 @@ export const Home: React.FC = () => {
             setSelectedTask(task);
             setOpenStatusDialog(true);
           }}
-          sortConfig={sortConfig}
-          onSort={handleSort}
         />
         <TaskFormModal
           open={openModal}
