@@ -1,7 +1,7 @@
 import { Container, Paper } from "@mui/material";
 import { AppBarComponent } from "../components/home/AppBar";
 import { PieChart, PieChartProps } from "../components/global/PieChart";
-import { TaskTable } from "../components/home/TaskTable";
+// import { TaskTable } from "../components/home/TaskTable";
 import { TaskFormModal } from "../components/home/modals/TaskFormModal";
 import { StatusModal } from "../components/home/modals/StatusModal";
 import { DeleteModal } from "../components/home/modals/DeleteModal";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Status, Task } from "../types";
 import { generateHash } from "../utils";
 import { SnackbarAlert } from "../components/global/SnackBar";
+import { Kanban } from "../components/home/Kanban";
 
 export const Home: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -139,7 +140,7 @@ export const Home: React.FC = () => {
         <Paper sx={{ p: 2, mb: 4 }}>
           <PieChart {...chartProps} />
         </Paper>
-        <TaskTable
+        <Kanban
           tasks={tasks}
           onEditTask={(task) => {
             setSelectedTask(task);
